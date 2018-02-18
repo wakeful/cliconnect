@@ -1,0 +1,21 @@
+language: go
+go:
+- 1.9
+script: go vet
+before_deploy:
+- "./build.sh"
+deploy:
+  provider: releases
+  api_key:
+    secure: a3Ff4C9Vjx9FC5vjf6qhhjmPsYcU9TfMEIprpAqSBMazCO8kUCPNK+2HLgOMHLMO45aNUyGgl+GK16ausRAvEkdORHCBOK7f1CGtjTjIEYc670vgUZR/QY5zxZZaXNq9aPLostUQTCBXXy9rqLoDWld7RQKdoBpB+vGMCPXYG3P0jeFBP3sOg0DO2laz9v438BTnGpFisXymewJINMqbmQHtV+vIF9OKlotewt3f6JEzoZ8WE4EYoJX8ccd4lydtAeLg0qp1ln+8xu40NhtbzexkyoND+3Ym3ljH5NWy0nNkAIfzkFiCjF/C/KbHtLEgkUlWiVH5ECqbRCybPcDd7eUtaNqqyuCQJf988HsFjj+EyOPDoQie+yjmBxifrdhSpJ/iG2yvnHcXLUrfBHIYnizm+P6UnXOfkWbFRszqyTEjW7kfwVxG1C2TCclPyHxYvc48ViTVsPXJOWGFyPhKapwPJlyIk+V3Dqr8IoVkG3+V7v0w3bprXJ4BUVT9FGBcgxpAo+re7/fypLR6ODQ/T0E+m8RljH2NGMN9h6RD+tcbIV+Rgy79j3gLqdz7iLbhLbGwePeW1HyKdLie+KH33ri+RWmKiGmUHjtIjyT5AVGWeoo2k6x7X0QBdxOsSBI1OThhdguZQ2LGjGA3sGjWoWAzsZ/SQVSLuWSloNdYXLE=
+  skip_cleanup: true
+  file:
+    - release/cliconnect-darwin-amd64
+    - release/cliconnect-darwin-amd64.sha256
+    - release/cliconnect-linux-amd64
+    - release/cliconnect-linux-amd64.sha256
+  on:
+    repo: wakeful/cliconnect
+    branch: master
+    tags: true
+
