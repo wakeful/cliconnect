@@ -89,6 +89,11 @@ func main() {
 		log.Fatalln(err)
 	}
 
+	if len(dataConnectorList) < 1 {
+		log.Println("could not find any connectors")
+		os.Exit(2)
+	}
+
 	var selectConnector = []*survey.Question{
 		{
 			Name: "connector",
