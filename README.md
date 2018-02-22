@@ -5,7 +5,7 @@ a small cli tool to work with [kafka connect](https://docs.confluent.io/current/
 
 Linux
 ```
-curl -Lo cliconnect https://github.com/wakeful/cliconnect/releases/download/0.1.0/cliconnect-linux-amd64 && chmod +x cliconnect && sudo mv cliconnect /usr/sbin/
+curl -Lo cliconnect https://github.com/wakeful/cliconnect/releases/download/0.1.1/cliconnect-linux-amd64 && chmod +x cliconnect && sudo mv cliconnect /usr/sbin/
 ```
 
 src
