@@ -117,6 +117,10 @@ func main() {
 		fmt.Println(err.Error())
 	}
 
+	if *&selectedConnector.Connector == "" {
+		os.Exit(2)
+	}
+
 	outputConnectorStatus, err := client.Get("/connectors/" + *&selectedConnector.Connector + "/status")
 	if err != nil {
 		log.Fatalln(err)
