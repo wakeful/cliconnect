@@ -23,10 +23,15 @@ var (
 type connectorList []string
 
 type connectorStatus struct {
-	Name      string `json:"name"`
+	Name string `json:"name"`
 	Connector struct {
 		State string `json:"state"`
 	} `json:"connector"`
+	Tasks []struct {
+		Id    int    `json:"task"`
+		Name  string `json:"worker_id"`
+		State string `json:"state"`
+	} `json:"tasks"`
 }
 
 type Client struct {
@@ -64,6 +69,37 @@ func (c Client) Call(method, connector, action string) error {
 	_, err = c.HTTPClient.Do(req)
 
 	return err
+}
+
+func getTaskID(data connectorStatus) (string, error) {
+
+	var taskLists []string
+	for _, t := range data.Tasks {
+		taskLists = append(taskLists, fmt.Sprintf("%s is %s with id %d", t.Name, t.State, t.Id))
+	}
+
+	var selectTask = []*survey.Question{
+		{
+			Name: "task",
+			Prompt: &survey.Select{
+				Message: "reset worker:",
+				Options: taskLists,
+				Default: "",
+			},
+		},
+	}
+
+	selectedTask := struct {
+		Task string `survey:"task"`
+	}{}
+
+	if err := survey.Ask(selectTask, &selectedTask); err != nil {
+		return "", err
+	}
+
+	task := strings.Split(string(selectedTask.Task), "id")
+
+	return strings.TrimSpace(task[1]), nil
 }
 
 var client *Client
@@ -137,6 +173,7 @@ func main() {
 	} else {
 		connectorActionOptions = append(connectorActionOptions, "start")
 	}
+	connectorActionOptions = append(connectorActionOptions, "workers")
 
 	var selectAction = []*survey.Question{
 		{
@@ -166,6 +203,16 @@ func main() {
 		break
 	case "restart":
 		err = client.Call("POST", selectedConnector.Connector, "restart")
+		break
+	case "workers":
+		var task string
+		task, err = getTaskID(dataConnectorStatus)
+		if err != nil {
+			break
+		}
+
+		err = client.Call("POST", selectedConnector.Connector, "tasks/"+task+"/restart")
+
 		break
 	}
 
