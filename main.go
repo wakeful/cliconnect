@@ -134,92 +134,93 @@ func main() {
 		os.Exit(2)
 	}
 
-	var selectConnector = []*survey.Question{
-		{
-			Name: "connector",
-			Prompt: &survey.Select{
-				Message: "Select connector:",
-				Options: dataConnectorList,
-				Default: "",
+	for {
+
+		var selectConnector = []*survey.Question{
+			{
+				Name: "connector",
+				Prompt: &survey.Select{
+					Message: "Select connector:",
+					Options: dataConnectorList,
+					Default: "",
+				},
 			},
-		},
-	}
+		}
 
-	selectedConnector := struct {
-		Connector string `survey:"connector"`
-	}{}
+		selectedConnector := struct {
+			Connector string `survey:"connector"`
+		}{}
 
-	if err = survey.Ask(selectConnector, &selectedConnector); err != nil {
-		fmt.Println(err.Error())
-	}
+		if err = survey.Ask(selectConnector, &selectedConnector); err != nil {
+			fmt.Println(err.Error())
+		}
 
-	if *&selectedConnector.Connector == "" {
-		os.Exit(2)
-	}
+		if *&selectedConnector.Connector == "" {
+			os.Exit(2)
+		}
 
-	outputConnectorStatus, err := client.Get("/connectors/" + *&selectedConnector.Connector + "/status")
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	var dataConnectorStatus connectorStatus
-	if err := json.Unmarshal(outputConnectorStatus, &dataConnectorStatus); err != nil {
-		log.Fatalln(err)
-	}
-
-	var connectorActionOptions = []string{"restart"}
-	if strings.ToLower(dataConnectorStatus.Connector.State) == "running" {
-		connectorActionOptions = append(connectorActionOptions, "pause")
-	} else {
-		connectorActionOptions = append(connectorActionOptions, "start")
-	}
-	connectorActionOptions = append(connectorActionOptions, "workers")
-
-	var selectAction = []*survey.Question{
-		{
-			Name: "action",
-			Prompt: &survey.Select{
-				Message: "Select action for connector:" + selectedConnector.Connector,
-				Options: connectorActionOptions,
-				Default: "",
-			},
-		},
-	}
-
-	selectedAction := struct {
-		Action string `survey:"action"`
-	}{}
-
-	if err = survey.Ask(selectAction, &selectedAction); err != nil {
-		log.Fatalln(err)
-	}
-
-	switch selectedAction.Action {
-	case "pause":
-		err = client.Call("PUT", selectedConnector.Connector, "pause")
-		break
-	case "start":
-		err = client.Call("PUT", selectedConnector.Connector, "resume")
-		break
-	case "restart":
-		err = client.Call("POST", selectedConnector.Connector, "restart")
-		break
-	case "workers":
-		var task string
-		task, err = getTaskID(dataConnectorStatus)
+		outputConnectorStatus, err := client.Get("/connectors/" + *&selectedConnector.Connector + "/status")
 		if err != nil {
+			log.Fatalln(err)
+		}
+
+		var dataConnectorStatus connectorStatus
+		if err := json.Unmarshal(outputConnectorStatus, &dataConnectorStatus); err != nil {
+			log.Fatalln(err)
+		}
+
+		var connectorActionOptions = []string{"restart"}
+		if strings.ToLower(dataConnectorStatus.Connector.State) == "running" {
+			connectorActionOptions = append(connectorActionOptions, "pause")
+		} else {
+			connectorActionOptions = append(connectorActionOptions, "start")
+		}
+		connectorActionOptions = append(connectorActionOptions, "workers")
+
+		var selectAction = []*survey.Question{
+			{
+				Name: "action",
+				Prompt: &survey.Select{
+					Message: "Select action for connector:" + selectedConnector.Connector,
+					Options: connectorActionOptions,
+					Default: "",
+				},
+			},
+		}
+
+		selectedAction := struct {
+			Action string `survey:"action"`
+		}{}
+
+		if err = survey.Ask(selectAction, &selectedAction); err != nil {
+			log.Fatalln(err)
+		}
+
+		switch selectedAction.Action {
+		case "pause":
+			err = client.Call("PUT", selectedConnector.Connector, "pause")
+			break
+		case "start":
+			err = client.Call("PUT", selectedConnector.Connector, "resume")
+			break
+		case "restart":
+			err = client.Call("POST", selectedConnector.Connector, "restart")
+			break
+		case "workers":
+			var task string
+			task, err = getTaskID(dataConnectorStatus)
+			if err != nil {
+				break
+			}
+
+			err = client.Call("POST", selectedConnector.Connector, "tasks/"+task+"/restart")
+
 			break
 		}
 
-		err = client.Call("POST", selectedConnector.Connector, "tasks/"+task+"/restart")
+		if err != nil {
+			log.Fatalln(err)
+		}
 
-		break
 	}
-
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	fmt.Println("All done")
-
 }
