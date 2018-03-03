@@ -66,17 +66,21 @@ func (c Client) Call(method, connector, action string) error {
 	return err
 }
 
+var client *Client
+
+func init() {
+	client = &Client{
+		Url:        *uri,
+		HTTPClient: &http.Client{},
+	}
+}
+
 func main() {
 	flag.Parse()
 
 	if *showVersion {
 		fmt.Printf("cliconnect\n url: %s\n version: %s\n", url, version)
 		os.Exit(2)
-	}
-
-	client := &Client{
-		Url:        *uri,
-		HTTPClient: &http.Client{},
 	}
 
 	outputReqConnectors, err := client.Get("/connectors")
