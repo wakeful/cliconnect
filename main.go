@@ -23,7 +23,7 @@ var (
 type connectorList []string
 
 type connectorStatus struct {
-	Name string `json:"name"`
+	Name      string `json:"name"`
 	Connector struct {
 		State string `json:"state"`
 	} `json:"connector"`
