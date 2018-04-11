@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"gopkg.in/AlecAivazis/survey.v1"
 )
@@ -110,19 +111,19 @@ func getTaskID(data connectorStatus) (string, error) {
 
 var client *Client
 
-func init() {
-	client = &Client{
-		Url:        *uri,
-		HTTPClient: &http.Client{},
-	}
-}
-
 func main() {
 	flag.Parse()
 
 	if *showVersion {
 		fmt.Printf("cliconnect\n url: %s\n version: %s\n", url, version)
 		os.Exit(2)
+	}
+
+	client = &Client{
+		Url: *uri,
+		HTTPClient: &http.Client{
+			Timeout: 5 * time.Second,
+		},
 	}
 
 	outputReqConnectors, err := client.Get("/connectors")
