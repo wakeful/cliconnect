@@ -20,6 +20,8 @@ var (
 	version     = "dev"
 )
 
+const goBack = "! go back?"
+
 type connectorList []string
 
 type connectorStatus struct {
@@ -72,8 +74,6 @@ func (c Client) Call(method, connector, action string) error {
 }
 
 func getTaskID(data connectorStatus) (string, error) {
-
-	const goBack = "! go back?"
 
 	var taskLists = []string{goBack}
 	for _, t := range data.Tasks {
@@ -175,7 +175,7 @@ func main() {
 			log.Fatalln(err)
 		}
 
-		var connectorActionOptions = []string{"restart"}
+		var connectorActionOptions = []string{goBack, "restart"}
 		if strings.ToLower(dataConnectorStatus.Connector.State) == "running" {
 			connectorActionOptions = append(connectorActionOptions, "pause")
 		} else {
@@ -189,7 +189,7 @@ func main() {
 				Prompt: &survey.Select{
 					Message: "Select action for connector:" + selectedConnector.Connector,
 					Options: connectorActionOptions,
-					Default: "",
+					Default: goBack,
 				},
 			},
 		}
@@ -203,6 +203,8 @@ func main() {
 		}
 
 		switch selectedAction.Action {
+		case goBack:
+			break
 		case "pause":
 			err = client.Call("PUT", selectedConnector.Connector, "pause")
 			break
