@@ -73,7 +73,9 @@ func (c Client) Call(method, connector, action string) error {
 
 func getTaskID(data connectorStatus) (string, error) {
 
-	var taskLists []string
+	const goBack = "! go back?"
+
+	var taskLists = []string{goBack}
 	for _, t := range data.Tasks {
 		taskLists = append(taskLists, fmt.Sprintf("%s is %s with id %d", t.Name, t.State, t.Id))
 	}
@@ -84,7 +86,7 @@ func getTaskID(data connectorStatus) (string, error) {
 			Prompt: &survey.Select{
 				Message: "reset worker:",
 				Options: taskLists,
-				Default: "",
+				Default: goBack,
 			},
 		},
 	}
@@ -95,6 +97,10 @@ func getTaskID(data connectorStatus) (string, error) {
 
 	if err := survey.Ask(selectTask, &selectedTask); err != nil {
 		return "", err
+	}
+
+	if selectedTask.Task == goBack {
+		return "", nil
 	}
 
 	task := strings.Split(string(selectedTask.Task), "id")
@@ -213,8 +219,11 @@ func main() {
 				break
 			}
 
-			err = client.Call("POST", selectedConnector.Connector, "tasks/"+task+"/restart")
+			if task == "" {
+				break
+			}
 
+			err = client.Call("POST", selectedConnector.Connector, "tasks/"+task+"/restart")
 			break
 		}
 
