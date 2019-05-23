@@ -49,7 +49,10 @@ func (c Client) Get(endpoint string) ([]byte, error) {
 		return nil, err
 	}
 
-	defer response.Body.Close()
+	defer func() {
+		err = response.Body.Close()
+		return
+	}()
 
 	output, err := ioutil.ReadAll(response.Body)
 	if err != nil {
